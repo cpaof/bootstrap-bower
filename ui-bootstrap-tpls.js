@@ -1439,6 +1439,8 @@ function ($compile, $parse, $document, $position, dateFilter, dateParser, datepi
 
       scope.showButtonBar = angular.isDefined(attrs.showButtonBar) ? scope.$parent.$eval(attrs.showButtonBar) : datepickerPopupConfig.showButtonBar;
 
+      scope.popup = {};
+
       scope.getText = function( key ) {
         return scope[key + 'Text'] || datepickerPopupConfig[key + 'Text'];
       };
@@ -1451,7 +1453,7 @@ function ($compile, $parse, $document, $position, dateFilter, dateParser, datepi
       // popup element used to display calendar
       var popupEl = angular.element('<div datepicker-popup-wrap><div datepicker></div></div>');
       popupEl.attr({
-        'ng-model': 'date',
+        'ng-model': 'popup.date',
         'ng-change': 'dateSelection()'
       });
 
@@ -1517,9 +1519,9 @@ function ($compile, $parse, $document, $position, dateFilter, dateParser, datepi
       // Inner change
       scope.dateSelection = function(dt) {
         if (angular.isDefined(dt)) {
-          scope.date = dt;
+          scope.popup.date = dt;
         }
-        ngModel.$setViewValue(scope.date);
+        ngModel.$setViewValue(scope.popup.date);
         ngModel.$render();
 
         if ( closeOnDateSelection ) {
@@ -1530,7 +1532,7 @@ function ($compile, $parse, $document, $position, dateFilter, dateParser, datepi
 
       element.bind('input change keyup', function() {
         scope.$apply(function() {
-          scope.date = ngModel.$modelValue;
+          scope.popup.date = ngModel.$modelValue;
         });
       });
 
@@ -1538,7 +1540,7 @@ function ($compile, $parse, $document, $position, dateFilter, dateParser, datepi
       ngModel.$render = function() {
         var date = ngModel.$viewValue ? dateFilter(ngModel.$viewValue, dateFormat) : '';
         element.val(date);
-        scope.date = parseDate( ngModel.$modelValue );
+        scope.popup.date = parseDate( ngModel.$modelValue );
       };
 
       var documentClickBind = function(event) {
@@ -1605,7 +1607,7 @@ function ($compile, $parse, $document, $position, dateFilter, dateParser, datepi
       }
 
       scope.$on('$destroy', function() {
-        $popup.remove();
+        $popup.next().remove();
         element.unbind('keydown', keydown);
         $document.unbind('click', documentClickBind);
       });
@@ -4015,7 +4017,7 @@ angular.module("template/datepicker/month.html", []).run(["$templateCache", func
 
 angular.module("template/datepicker/popup.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("template/datepicker/popup.html",
-    "<ul class=\"dropdown-menu\" ng-style=\"{display: (isOpen && 'block') || 'none', top: position.top+'px', left: position.left+'px'}\" ng-keydown=\"keydown($event)\">\n" +
+    "<ul class=\"dropdown-menu\" ng-if=\"isOpen\" ng-style=\"{display: (isOpen && 'block') || 'none', top: position.top+'px', left: position.left+'px'}\" ng-keydown=\"keydown($event)\">\n" +
     "	<li ng-transclude></li>\n" +
     "	<li ng-if=\"showButtonBar\" style=\"padding:10px 9px 2px\">\n" +
     "		<span class=\"btn-group pull-left\">\n" +
